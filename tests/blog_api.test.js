@@ -4,16 +4,18 @@ const api = supertest(app)
 const Blog = require('../models/blog')
 const { initialBlogs, blogsInDb, nonExistingId } = require('./test_helper')
 
-beforeAll(async () => {
-  await Blog.remove({})
+describe('when there is initially some blogs saved', async () => {
 
-  const blogObjects = initialBlogs.map(blog => new Blog(blog))
-  const promiseArray = blogObjects.map(blog => blog.save())
-  await Promise.all(promiseArray)
-})
-describe('where there is initially some blogs saved', async () => {
+  beforeAll(async () => {
+    await Blog.remove({})
+
+    const blogObjects = initialBlogs.map(blog => new Blog(blog))
+    const promiseArray = blogObjects.map(blog => blog.save())
+    await Promise.all(promiseArray)
+  })
+
   test('all blogs are returned as JSON by GET /api/blogs', async () => {
-    const blogsInDatabase = await blogsInDb();
+    const blogsInDatabase = await blogsInDb()
     const response = await api
       .get('/api/blogs')
       .expect(200)
@@ -33,14 +35,14 @@ describe('where there is initially some blogs saved', async () => {
 
   test('404 is returned by GET /api/blogs/:id with nonexisting valid id', async () => {
     const validNonexistingId = await nonExistingId()
-    const responnse = await api
+    await api
       .get(`/api/blogs/${validNonexistingId}`)
       .expect(404)
   })
 
   test('404 is returned by GET /api/blogs/:id with malformatted id', async () => {
     const malformattedId = '1'
-    const response = await api
+    await api
       .get(`/api/blogs/${malformattedId}`)
       .expect(400)
   })
@@ -124,6 +126,64 @@ describe('addition of a new blog', async () => {
     const blogsAfterOperation = await blogsInDb()
     expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
   })
+})
+
+describe('deletion of a blog', async () => {
+  let addedBlog
+
+  beforeAll(async () => {
+    await Blog.remove({})
+
+    addedBlog = new Blog({
+      author: 'test author',
+      title: 'test title',
+      url: 'test_url'
+    })
+    await addedBlog.save()
+  })
+
+  test('DELETE /api/blogs/:id succeeds with a proper statuscode', async () => {
+    const blogsAtStart = await blogsInDb()
+
+    await api
+      .delete(`/api/blogs/${addedBlog._id}`)
+      .expect(204)
+
+    const blogsAfterOperation = await blogsInDb()
+    expect(blogsAfterOperation.length).toBe(blogsAtStart.length - 1)
+
+    const titles = blogsAfterOperation.map(blog => blog.title)
+    expect(titles).not.toContain(addedBlog.title)
+  })
+})
+
+describe('editing a blog', async () => {
+  let addedBlog
+
+  beforeAll(async () => {
+    await Blog.remove({})
+
+    addedBlog = new Blog({
+      author: 'test author',
+      title: 'test title',
+      url: 'test_url'
+    })
+    await addedBlog.save()
+  })
+
+  test('PUT /api/blogs/:id succeeds with a proper statuscode', async () => {
+    const editedBlog = { ...addedBlog._doc, likes: 2 }
+
+    await api
+      .put(`/api/blogs/${addedBlog._id}`)
+      .send(editedBlog)
+      .expect(200)
+
+    const editedBlogAfterOperation = await Blog.findById(editedBlog._id)
+
+    expect(editedBlogAfterOperation.likes).toBe(2)
+  })
+
 })
 
 afterAll(() => {
