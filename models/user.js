@@ -1,22 +1,22 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const personSchema = new Schema({
+const userSchema = new Schema({
   username: String,
   name: String,
-  password: String,
-  adult: Boolean
+  adult: Boolean,
+  passwordHash: String
 })
 
-personSchema.statics.format = function (person) {
+userSchema.statics.format = function (user) {
   return {
-    username: person.username,
-    name: person.name,
-    adult: person.adult,
-    id: person._id
+    username: user.username,
+    name: user.name,
+    adult: user.adult,
+    id: user._id
   }
 }
 
-const Person = mongoose.model('person', personSchema)
+const User = mongoose.model('user', userSchema)
 
-module.exports = Person
+module.exports = User

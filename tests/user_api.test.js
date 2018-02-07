@@ -2,13 +2,12 @@ const supertest = require('supertest')
 const { app, server } = require('../index')
 const api = supertest(app)
 const User = require('../models/user')
-const { usersInDb }= require('./test_helper')
-
+const { usersInDb } = require('./test_helper')
 
 describe('when there is initially one user in db', async () => {
   beforeAll(async () => {
     await User.remove({})
-    const user = new User({username: 'root', password: 'sekret'})
+    const user = new User({ username: 'root', password: 'sekret' })
     await user.save()
   })
 
