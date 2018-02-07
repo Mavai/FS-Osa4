@@ -172,6 +172,7 @@ describe('editing a blog', async () => {
   })
 
   test('PUT /api/blogs/:id succeeds with a proper statuscode', async () => {
+    const blogsAtStart = await blogsInDb()
     const editedBlog = { ...addedBlog._doc, likes: 2 }
 
     await api
@@ -180,8 +181,10 @@ describe('editing a blog', async () => {
       .expect(200)
 
     const editedBlogAfterOperation = await Blog.findById(editedBlog._id)
-
     expect(editedBlogAfterOperation.likes).toBe(2)
+
+    const blogsAfterOperation = await blogsInDb()
+    expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
   })
 
 })
