@@ -6,7 +6,9 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
+const loginRouter = require('./controllers/login')
 const config = require('./utils/config')
+const { tokenExtractor } = require('./utils/middlewares')
 
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
@@ -18,8 +20,20 @@ mongoose.Promise = global.Promise
 app.use(cors())
 app.use(bodyParser.json())
 
+app.use(tokenExtractor)
+
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
+
+const getTokenFrom = (request, response, next) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    request.token = authorization.substring(7)
+  }
+  request.token = null;
+  next()
+}
 
 const server = http.createServer(app)
 

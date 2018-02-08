@@ -1,5 +1,6 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImxvZ2ludGVzdCIsImlkIjoiNWE3YzIwZDUzOTkwMmIxMjFiZTBhYTQ0IiwiaWF0IjoxNTE4MDg4NjI2fQ.iXop_3s7hZOpxT8NRDnDgEXrH9f2PZhr_u7-BODVyBY
 
 {
   "title": "Test blog",

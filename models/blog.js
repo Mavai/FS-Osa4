@@ -6,7 +6,7 @@ const blogSchema = new Schema({
   author: String,
   url: String,
   likes: Number,
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' }
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 })
 
 blogSchema.statics.format = function(blog) {
