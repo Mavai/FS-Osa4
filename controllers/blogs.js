@@ -36,7 +36,7 @@ blogsRouter.post('/', async (request, response) => {
       likes: body.likes || 0,
       user: user._id
     })
-    
+
     const savedBlog = await blog.save()
 
     user.blogs = user.blogs.concat(blog._id)
@@ -55,9 +55,17 @@ blogsRouter.post('/', async (request, response) => {
 
 blogsRouter.delete('/:id', async (request, response) => {
   try {
-    const blog = await Blog.findByIdAndRemove(request.params.id)
-    if (blog) return response.status(204).end()
-    else return response.status(404).end()
+    const token = request.token
+    const decodedToken = jwt.verify(token, process.env.SECRET)
+    if (!token || !decodedToken.id) return response.status(401).json({ error: 'token missing or invalid' })
+
+    const blog = await Blog.findById(request.params.id)
+    if (!blog) return response.status(404).end()
+
+    if (blog.user.toString() !== decodedToken.id) return response.status(403).json({ error: 'you do not have permission' })
+
+    await blog.remove()
+    response.status(204).end()
   } catch (exception) {
     console.log(exception)
     response.status(400).send({ error: 'malformatted id' })
@@ -75,13 +83,5 @@ blogsRouter.put('/:id', async (request, response) => {
     response.status(400)
   }
 })
-
-const getTokenFrom = (request) => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7)
-  }
-  return null;
-}
 
 module.exports = blogsRouter

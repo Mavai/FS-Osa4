@@ -2,13 +2,20 @@ const supertest = require('supertest')
 const { app, server } = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
-const { initialBlogs, blogsInDb, nonExistingId } = require('./test_helper')
+const { initialBlogs, blogsInDb, nonExistingId, testUser, testUserToken } = require('./test_helper')
+
+let user
+let token
+
+beforeAll(async () => {
+  user = await testUser()
+  token = await testUserToken(user)
+})
 
 describe('when there is initially some blogs saved', async () => {
 
   beforeAll(async () => {
     await Blog.remove({})
-
     const blogObjects = initialBlogs.map(blog => new Blog(blog))
     const promiseArray = blogObjects.map(blog => blog.save())
     await Promise.all(promiseArray)
@@ -58,9 +65,9 @@ describe('addition of a new blog', async () => {
       title: 'test title',
       url: 'test_url'
     }
-
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -83,6 +90,7 @@ describe('addition of a new blog', async () => {
 
     const response = await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -103,6 +111,7 @@ describe('addition of a new blog', async () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
       .send(newBlogWithoutTitle)
       .expect(400)
 
@@ -120,6 +129,7 @@ describe('addition of a new blog', async () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
       .send(newBlogWithoutTitle)
       .expect(400)
 
@@ -137,7 +147,8 @@ describe('deletion of a blog', async () => {
     addedBlog = new Blog({
       author: 'test author',
       title: 'test title',
-      url: 'test_url'
+      url: 'test_url',
+      user: user._id
     })
     await addedBlog.save()
   })
@@ -147,6 +158,7 @@ describe('deletion of a blog', async () => {
 
     await api
       .delete(`/api/blogs/${addedBlog._id}`)
+      .set('Authorization', `bearer ${token}`)
       .expect(204)
 
     const blogsAfterOperation = await blogsInDb()

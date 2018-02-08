@@ -5,7 +5,7 @@ const User = require('../models/user')
 const { usersInDb } = require('./test_helper')
 
 describe('when there is initially one user in db', async () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await User.remove({})
     const user = new User({ username: 'root', password: 'sekret' })
     await user.save()

@@ -26,15 +26,6 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 
-const getTokenFrom = (request, response, next) => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    request.token = authorization.substring(7)
-  }
-  request.token = null;
-  next()
-}
-
 const server = http.createServer(app)
 
 server.listen(config.port, () => {
