@@ -13,7 +13,7 @@ blogsRouter.get('/', async (request, response) => {
 blogsRouter.get('/:id', async (request, response) => {
   try {
     const blog = await Blog.findById(request.params.id)
-    if (blog) return response.json(blog)
+    if (blog) return response.json(Blog.format(blog))
     else return response.status(404).end()
   } catch (exception) {
     response.status(400).send({ error: 'malformatted id' })
@@ -42,7 +42,7 @@ blogsRouter.post('/', async (request, response) => {
     user.blogs = user.blogs.concat(blog._id)
     await user.save()
 
-    response.status(201).json(savedBlog)
+    response.status(201).json(Blog.format(savedBlog))
   } catch (exception) {
     if (exception.name === 'JsonWebTokenError' ) {
       response.status(401).json({ error: exception.message })
