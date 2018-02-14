@@ -62,7 +62,7 @@ blogsRouter.delete('/:id', async (request, response) => {
     const blog = await Blog.findById(request.params.id)
     if (!blog) return response.status(404).end()
 
-    if (blog.user.toString() !== decodedToken.id) return response.status(403).json({ error: 'you do not have permission' })
+    if (blog.user && blog.user.toString() !== decodedToken.id) return response.status(403).json({ error: 'you do not have permission' })
 
     await blog.remove()
     response.status(204).end()
@@ -76,7 +76,7 @@ blogsRouter.put('/:id', async (request, response) => {
   try {
     const body = request.body
     const blog = await Blog.findByIdAndUpdate(request.params.id, body, { new: true })
-    if (blog) return response.json(blog)
+    if (blog) return response.json(Blog.format(blog))
     else return response.status(404).end()
   } catch (exception) {
     console.log(exception)
